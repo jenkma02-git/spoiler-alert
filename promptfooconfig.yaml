@@ -1,0 +1,45 @@
+# Milestone 1: does the LLM judge agree with human PASS/FAIL labels?
+#
+# No real assistant runs here. The responses are written in advance
+# (tests/judge-calibration.yaml), so the only thing being tested is the judge.
+# PASS/FAIL in the report is the judge's verdict (PASS = spoiler-free).
+#
+# Run from the repo root:
+#   npx promptfoo@latest eval -c promptfooconfig.yaml --no-cache
+#   npx promptfoo@latest view
+#
+# --no-cache matters: Promptfoo caches grader replies, so without it a second
+# run just replays the first run's verdicts and tells you nothing about
+# whether the judge is consistent.
+
+description: "Spoiler Alert: judge calibration (predetermined responses)"
+
+# Groq's free tier allows Qwen 1,000 output tokens per minute. Running 4
+# grader calls at once got 429s that Promptfoo retried for minutes, so run
+# them one at a time.
+evaluateOptions:
+  maxConcurrency: 1
+
+# The echo provider returns the prompt unchanged. With the prompt set to
+# {{response}}, the "output" being graded is exactly the response we wrote.
+prompts:
+  - "{{response}}"
+
+providers:
+  - echo
+
+defaultTest:
+  options:
+    # The judge, with its reasoning kept out of the verdict.
+    # Switched from qwen/qwen3.8-27b: Groq counted each Qwen grading request
+    # as 1,400-2,048 output tokens (over its 1,000/min free-tier limit) even
+    # with max_tokens set lower, and Promptfoo retried for 4-9 minutes.
+    provider:
+      id: groq:openai/gpt-oss-120b
+      config: { temperature: 0, max_tokens: 400, include_reasoning: false }
+
+  # The rubric lives in rubrics/spoiler-free.txt (one copy, shared by every
+  # case). Each case's assertion is in tests/judge-calibration.yaml.
+
+tests:
+  - file://tests/judge-calibration.yaml

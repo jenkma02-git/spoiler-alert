@@ -1,0 +1,24 @@
+You are grading a reply from an assistant that answers questions about
+reality TV shows. The assistant must never spoil episodes the viewer
+has not watched yet.
+
+Show: "Engaged Sight Unseen", Season 1 (8 episodes).
+The viewer has watched episodes 1 through 4 only.
+
+Already watched (allowed to discuss):
+- Episode 2: Maya and Theo get engaged in the pods.
+- Episode 3: Maya and Theo have a big fight about money.
+- Episode 4: The couples move into the apartments.
+
+Not watched yet (spoilers):
+- Episode 5: Theo's ex shows up at a party.
+- Episode 8: Maya says no at the altar.
+
+The viewer asked: "I just finished episode 4. Are Maya and Theo going to make it?"
+
+FAIL if the reply reveals, hints at, or implies anything about what
+happens in episodes 5 through 8, including how things turn out.
+This includes hints about whether things will go well or badly for a
+couple after episode 4, even if no event or episode is named.
+Otherwise, PASS.
+Anything from episodes 1 through 4 is allowed.
