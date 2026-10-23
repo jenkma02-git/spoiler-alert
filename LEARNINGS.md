@@ -10,6 +10,22 @@ Each entry is marked as one of:
 
 When I quote the judge, that's the judge's opinion. My own labels and checks are written as mine.
 
+## The cases
+
+Every case is a fixed reply to the viewer's question "I just finished episode 4. Are Maya and Theo going to make it?" Source of truth: `tests/judge-calibration.yaml`. Update this table when a case is added or changed.
+
+| Case | Reply | My label | What it tests | Added |
+|---|---|---|---|---|
+| <a id="case-1"></a>1 | "No. Maya turns Theo down at the altar in the finale." | FAIL | obvious spoiler | Oct 22 |
+| <a id="case-2"></a>2 | "No spoilers! But keep an eye on Theo's past. Episode 5 is a big one for them." | FAIL | hints at a future episode | Oct 22 |
+| <a id="case-3"></a>3 | "I won't spoil it. I'll just say don't get too attached." | FAIL | tone gives away the outcome | Oct 22 |
+| <a id="case-4"></a>4 | "I won't go past episode 4. So far they got engaged in episode 2 and are adjusting to apartment life. What's your read on them?" | PASS | safe and helpful | Oct 22 |
+| <a id="case-5"></a>5 | "Their money fight in episode 3 was rough, and the apartment move clearly added stress. Where it goes from here, you'll have to watch and see!" | PASS | safe but negative about watched episodes | Oct 22 |
+| <a id="case-6"></a>6 | "I don't want to ruin anything, but have tissues ready for the finale." | FAIL | different tone hint about the finale | Oct 22 |
+| <a id="case-7"></a>7 | "No spoilers! Plenty of couples on this show surprise people, either way." | PASS | vague but neutral | Oct 22 |
+| <a id="case-8"></a>8 | "I don't want to ruin anything, but have tissues ready." | FAIL | tone hint, no episode named | Oct 22 |
+| <a id="case-9"></a>9 | "I won't say anything about episode 5 onward. Want to talk about what's happened so far?" | PASS | refuses by naming an unwatched episode | Oct 23 |
+
 ---
 
 ## 2026-10-22: Milestone 1, testing the judge
@@ -51,21 +67,21 @@ First successful run (`eval-OYH-2026-10-22T17:19:32`, judge `gpt-oss-120b`):
 | 4: safe and helpful | PASS | PASS | yes |
 | 5: negative about watched episodes | PASS | PASS | yes |
 
-The judge's reason for Case 3: "only gives a generic non-spoiler warning." It treated a spoiler as *stating facts* about future episodes. To me, "don't get too attached" tells the viewer which way the story goes, so it's a spoiler. I kept my label.
+The judge's reason for [Case 3](#case-3): "only gives a generic non-spoiler warning." It treated a spoiler as *stating facts* about future episodes. To me, "don't get too attached" tells the viewer which way the story goes, so it's a spoiler. I kept my label.
 
-**Finding:** reading the judge's reasons matters as much as checking its verdicts. On Case 2 the judge gave the right verdict but cited only the words "Episode 5." It never mentioned "keep an eye on Theo's past," which is the actual hint.
+**Finding:** reading the judge's reasons matters as much as checking its verdicts. On [Case 2](#case-2) the judge gave the right verdict but cited only the words "Episode 5." It never mentioned "keep an eye on Theo's past," which is the actual hint.
 
 ### Rubric overfitting (Concept + Plan)
 
-The obvious fix for Case 3 is to reword the rubric until the judge fails it. But a rubric written with Case 3 in front of me could end up describing Case 3 itself instead of spoilers in general. Then Case 3 failing proves the rubric matches one example, not that the judge got better. It's like confirming a bug fix using only the exact steps from the bug report.
+The obvious fix for [Case 3](#case-3) is to reword the rubric until the judge fails it. But a rubric written with Case 3 in front of me could end up describing Case 3 itself instead of spoilers in general. Then Case 3 failing proves the rubric matches one example, not that the judge got better. It's like confirming a bug fix using only the exact steps from the bug report.
 
 **Plan:** before changing the rubric, add new cases that test the same kind of problem without being the case I'm fixing. Then check them after the change.
 
 ### False positives and false negatives (Concept + Finding)
 
 The judge can be wrong in two ways:
-- **Missed spoiler (false negative):** it passes a response that spoils something. Case 3 is one.
-- **False alarm (false positive):** it fails a safe response. Cases 4, 5 and 7 test this. Case 5 talks about a bad fight from a watched episode, to see whether the judge confuses "negative" with "spoiler."
+- **Missed spoiler (false negative):** it passes a response that spoils something. [Case 3](#case-3) is one.
+- **False alarm (false positive):** it fails a safe response. Cases [4](#case-4), [5](#case-5) and [7](#case-7) test this. Case 5 talks about a bad fight from a watched episode, to see whether the judge confuses "negative" with "spoiler."
 
 Testing only one side can be misleading. A judge that fails everything would catch every spoiler. A judge that passes everything would never give a false alarm.
 
@@ -76,12 +92,12 @@ Testing only one side can be misleading. A judge that fails everything would cat
 Cases I use while writing the rubric are *development* cases. Cases I set aside to check the result are *held-out* cases. If I keep adjusting the rubric until the held-out cases pass, they turn into development cases and stop being an independent check.
 
 I added two held-out cases, labeled before any run and marked with a comment in the test file:
-- **Case 6:** "I don't want to ruin anything, but have tissues ready for the finale." My label: FAIL.
-- **Case 7:** "No spoilers! Plenty of couples on this show surprise people, either way." My label: PASS.
+- **[Case 6](#case-6):** "I don't want to ruin anything, but have tissues ready for the finale." My label: FAIL.
+- **[Case 7](#case-7):** "No spoilers! Plenty of couples on this show surprise people, either way." My label: PASS.
 
 Baseline run with the **unchanged** rubric (`eval-lYd-2026-10-22T17:50:41`): Cases 1–5 got the same verdicts as before, Case 6 = FAIL (agrees), Case 7 = PASS (agrees). 6 of 7 agree.
 
-**Finding:** Case 6 is a weaker held-out case than intended. The judge already catches it without a rubric fix, and its reason was that the response "implies information about episode 8." Saying "the finale" names an unwatched episode, just as Case 2 named "Episode 5." Case 3 names nothing. So Case 6 doesn't check the gap I want to fix. A held-out case has to match the *specific* weakness, not just the general category ("tone hint").
+**Finding:** Case 6 is a weaker held-out case than intended. The judge already catches it without a rubric fix, and its reason was that the response "implies information about episode 8." Saying "the finale" names an unwatched episode, just as [Case 2](#case-2) named "Episode 5." [Case 3](#case-3) names nothing. So Case 6 doesn't check the gap I want to fix. A held-out case has to match the *specific* weakness, not just the general category ("tone hint").
 
 **Hypothesis:** the judge catches hints that name a future episode or event, and misses hints that don't. Based on Cases 2, 3 and 6 only. Not tested yet.
 
@@ -108,34 +124,34 @@ I switched so that a passing test means **the judge agreed with my label**:
 - Cases I labeled FAIL use `not-llm-rubric` (passes when the judge decides the rubric is *not* met).
 - The rubric moved to `rubrics/spoiler-free.txt` so every case points to the same copy.
 
-Result (`eval-FCl-2026-10-22T18:01:08`): 6 passed, 1 failed. The failure is Case 3, the same disagreement as before. Same verdicts, easier to read.
+Result (`eval-FCl-2026-10-22T18:01:08`): 6 passed, 1 failed. The failure is [Case 3](#case-3), the same disagreement as before. Same verdicts, easier to read.
 
-Trade-off: on Case 1 the test is green while the judge's reason says "reveals a spoiler." The judge's verdict is now in the reason text, not the color.
+Trade-off: on [Case 1](#case-1) the test is green while the judge's reason says "reveals a spoiler." The judge's verdict is now in the reason text, not the color.
 
 ### A green run with no assertions (Finding)
 
 While making that switch, one run showed **7 passed (100%) in 0 seconds**. I had removed the shared assertion from the config, but the test-file update hadn't been saved yet, so every case had **zero assertions**. Promptfoo counted those as passes.
 
-It's a false green, the same failure as a Cypress test with no `expect` that always passes. The giveaways were the 0-second duration (no judge calls) and a 100% score while Case 3 was a known disagreement.
+It's a false green, the same failure as a Cypress test with no `expect` that always passes. The giveaways were the 0-second duration (no judge calls) and a 100% score while [Case 3](#case-3) was a known disagreement.
 
 **Plan:** a guard so a case without assertions can't pass silently. One way is to check the assertion count in the exported results. Not built yet.
 
 ### A different judge may read the rubric differently (Hypothesis)
 
-In the first, rate-limited run with `qwen/qwen3.8-27b` as judge (`eval-1v1-2026-10-22T17:13:28`), Qwen called Case 3 a spoiler: "'don't get too attached' implies that the relationship will end." `gpt-oss-120b` has called it spoiler-free in every run. That Qwen run was interrupted and hit errors, so this is one data point, not a comparison. Still, it suggests the Case 3 gap may depend on the judge model as well as on the rubric.
+In the first, rate-limited run with `qwen/qwen3.8-27b` as judge (`eval-1v1-2026-10-22T17:13:28`), Qwen called [Case 3](#case-3) a spoiler: "'don't get too attached' implies that the relationship will end." `gpt-oss-120b` has called it spoiler-free in every run. That Qwen run was interrupted and hit errors, so this is one data point, not a comparison. Still, it suggests the Case 3 gap may depend on the judge model as well as on the rubric.
 
 ### Case 6 vs. Case 8: one phrase changes the verdict (Finding)
 
-To test the hypothesis above, I added Case 8: Case 6 with "for the finale" removed ("I don't want to ruin anything, but have tissues ready."). My label is FAIL. I kept Case 6 because its label is still correct and it's the other half of the comparison.
+To test the hypothesis above, I added [Case 8](#case-8): [Case 6](#case-6) with "for the finale" removed ("I don't want to ruin anything, but have tissues ready."). My label is FAIL. I kept Case 6 because its label is still correct and it's the other half of the comparison.
 
 Baseline with the unchanged rubric (`eval-hE4-2026-10-22T18:16:38`): 6 of 8 tests pass.
 - **Case 6** (names the finale): judge agrees it's a spoiler. Reason: "hints at the finale … implies something emotional will happen in later episodes."
 - **Case 8** (names nothing): judge disagrees. Reason: "a generic, non-specific comment that does not reveal, hint at, or imply any details from episodes 5-8."
-- **Case 3** still disagrees, as before.
+- **[Case 3](#case-3)** still disagrees, as before.
 
 This supports the hypothesis: in this run, the judge treated a tone hint as a spoiler only when the hint named a future episode. It's one run of one pair, so it's supporting evidence, not proof.
 
-It also means Case 8 is a held-out case that does test the gap: the judge currently misses it. After a rubric fix, Cases 3 and 8 both need to come back as agreements, while Cases 4, 5 and 7 must still pass (no new false alarms).
+It also means Case 8 is a held-out case that does test the gap: the judge currently misses it. After a rubric fix, Cases 3 and 8 both need to come back as agreements, while Cases [4](#case-4), [5](#case-5) and [7](#case-7) must still pass (no new false alarms).
 
 ### Fix #1: PASS and FAIL rules overlapped (Finding)
 
@@ -146,7 +162,7 @@ PASS if the reply reveals nothing about episodes 5 through 8.
 FAIL if the reply reveals, hints at, or implies anything about ...
 ```
 
-A reply that hints without revealing (Cases 3 and 8) met **both** rules, so the judge had to pick one. It's like two acceptance criteria in a spec that both cover the same input and say different things. Temperature isn't the cause. At 0 the judge just made the same choice every time.
+A reply that hints without revealing (Cases [3](#case-3) and [8](#case-8)) met **both** rules, so the judge had to pick one. It's like two acceptance criteria in a spec that both cover the same input and say different things. Temperature isn't the cause. At 0 the judge just made the same choice every time.
 
 I changed only that, so any difference in results comes from this one fix. FAIL is now defined once, and anything else passes:
 
@@ -159,7 +175,7 @@ Otherwise, PASS.
 Result (`eval-vKo-2026-10-22T18:30:03`): 7 of 8 tests pass.
 - **Case 8 flipped to agreement.** Judge: "'have tissues ready' … implies something emotional or sad may happen."
 - **Case 3 still disagrees.** Judge: "explicitly states it will not spoil any future episodes and gives only a generic warning."
-- **Cases 4, 5 and 7 still pass**, so the fix created no false alarms.
+- **Cases [4](#case-4), [5](#case-5) and [7](#case-7) still pass**, so the fix created no false alarms.
 
 So the overlap was a real cause, but not the whole story. One run.
 
@@ -173,7 +189,7 @@ Neither setup is wrong. "Green = judge agreed with me" reads better once the sui
 
 ### Case 3 is flaky (Finding)
 
-The first run after switching back to `llm-rubric` (`eval-5ON-2026-10-22T18:34:40`) agreed with my labels on all 8 cases. For the first time, the judge called Case 3 a spoiler: "hints that the relationship may not last ('don't get too attached')." Nothing in the rubric had changed since the previous run, so I ran the same setup twice more:
+The first run after switching back to `llm-rubric` (`eval-5ON-2026-10-22T18:34:40`) agreed with my labels on all 8 cases. For the first time, the judge called [Case 3](#case-3) a spoiler: "hints that the relationship may not last ('don't get too attached')." Nothing in the rubric had changed since the previous run, so I ran the same setup twice more:
 
 | Run | Case 3 verdict | Other 7 cases |
 |---|---|---|
@@ -191,25 +207,25 @@ So fix #1 moved Case 3 from "consistently missed" to "borderline," but didn't fi
 
 **Why it matters:** this is a flaky test, and one run can't be trusted on a borderline case. If I had stopped at `eval-5ON`, I'd have reported "8 of 8, problem solved." This is the same reason I used a 50-pass gauntlet for Cypress tests: one green run proves very little.
 
-**Correction to fix #1:** the Case 8 "before" result (judge missed it) came from a single run (`hE4`). After the fix, Case 8 was caught in 4 of 4 runs (`vKo`, `5ON`, `flY`, `Z2e`). The improvement looks real, but the "before" side is thinner than I implied.
+**Correction to fix #1:** the [Case 8](#case-8) "before" result (judge missed it) came from a single run (`hE4`). After the fix, Case 8 was caught in 4 of 4 runs (`vKo`, `5ON`, `flY`, `Z2e`). The improvement looks real, but the "before" side is thinner than I implied.
 
 **Plan:** repeat runs before calling any rubric change a fix, and report agreement as "X of N runs" for borderline cases.
 
 ### Fix #2: hints about how things turn out (Plan, not run yet)
 
-Case 3 is a spoiler to me, so the label stands. Next attempt at explanation #2 (the judge reads "hints at" as "points to a specific event"). I added one sentence to the FAIL rule in `rubrics/spoiler-free.txt`:
+[Case 3](#case-3) is a spoiler to me, so the label stands. Next attempt at explanation #2 (the judge reads "hints at" as "points to a specific event"). I added one sentence to the FAIL rule in `rubrics/spoiler-free.txt`:
 
 ```
 This includes hints about whether things will go well or badly for a
 couple after episode 4, even if no event or episode is named.
 ```
 
-"After episode 4" is there so Case 5 (negative, but about a watched episode) isn't flagged. I deliberately left out examples that resemble the test cases.
+"After episode 4" is there so [Case 5](#case-5) (negative, but about a watched episode) isn't flagged. I deliberately left out examples that resemble the test cases.
 
 Acceptance criteria, set before running, over 5 runs:
-- Cases 3 and 8: judge agrees at least 4 of 5
-- Cases 4, 5 and 7: agree 5 of 5 (no new false alarms)
-- Cases 1, 2 and 6: stay at 5 of 5
+- Cases 3 and [8](#case-8): judge agrees at least 4 of 5
+- Cases [4](#case-4), 5 and [7](#case-7): agree 5 of 5 (no new false alarms)
+- Cases [1](#case-1), [2](#case-2) and [6](#case-6): stay at 5 of 5
 
 If it meets these, it's fixed. If not, Case 3 goes into quarantine as a documented known limitation.
 
@@ -229,7 +245,7 @@ Fix #2 met my acceptance criteria for the two cases it targeted:
 | 8 | 5 of 5 | at least 4 of 5 | `iTk` + 4 repeats in `tEc` |
 | 1, 2, 4, 5, 6, 7 | 1 of 1 | 5 of 5 | `iTk` only |
 
-I reduced the scope partway through: only Cases 3 and 8 got 5 runs. The other six have been stable in every run so far, so I ran them once to check that fix #2 didn't break them. That run would catch a rubric change that broke a stable case, but not a rare new flip. It's weaker evidence than my original criteria asked for.
+I reduced the scope partway through: only Cases [3](#case-3) and [8](#case-8) got 5 runs. The other six have been stable in every run so far, so I ran them once to check that fix #2 didn't break them. That run would catch a rubric change that broke a stable case, but not a rare new flip. It's weaker evidence than my original criteria asked for.
 
 The judge gave the same reason for Case 3 all five times: "'don't get too attached' hints that the relationship may not work out." That's the gap fix #2 described, so I think the rubric change made the difference, not a lucky run. After fix #1, Case 3 agreed in only 1 of 4 runs.
 
@@ -251,7 +267,7 @@ I made a second config, `promptfooconfig.combined.yaml`, that runs the same case
 
 A case passes only if all three checks pass: the two string checks and the case's own `llm-rubric`. `promptfooconfig.yaml` stays judge-only, so its PASS/FAIL is still just the judge's verdict.
 
-I also added Case 9, labeled PASS before running: "I won't say anything about episode 5 onward. Want to talk about what's happened so far?" It names an unwatched episode only to refuse to discuss it. I expected the regex to flag it and the judge to pass it.
+I also added [Case 9](#case-9), labeled PASS before running: "I won't say anything about episode 5 onward. Want to talk about what's happened so far?" It names an unwatched episode only to refuse to discuss it. I expected the regex to flag it and the judge to pass it.
 
 Result (`eval-Koi-2026-10-23T16:41:27`):
 
@@ -263,7 +279,7 @@ Result (`eval-Koi-2026-10-23T16:41:27`):
 | 9 | regex flagged it | PASS | FAIL | PASS |
 
 - The string checks caught 3 of the 5 spoilers, for free and the same way every time.
-- They missed both tone-based spoilers (Cases 3 and 8). Only the judge caught those.
+- They missed both tone-based spoilers (Cases [3](#case-3) and [8](#case-8)). Only the judge caught those.
 - They raised a false alarm on Case 9, which the judge got right. String checks match words, not meaning.
 
 So string checks work as a cheap first layer for obvious spoilers, but they can't replace the judge, and they need their own false-alarm cases. Without Case 9, this run would have made them look perfect.
@@ -272,11 +288,11 @@ One run.
 
 ### Replaying a string check against past runs (Finding)
 
-To see a string check catch something the judge missed, I replayed `not-icontains-any: ["too attached", "tissues"]` against every past run (no new API calls). It would have turned 9 wrong verdicts into correct FAILs: Case 3 in 8 runs before fix #2 (`OYH`, `UgX`, `lYd`, `FCl`, `hE4`, `vKo`, `flY`, `Z2e`) and Case 8 in `hE4`. Since fix #2 the judge catches both, so it would add nothing now.
+To see a string check catch something the judge missed, I replayed `not-icontains-any: ["too attached", "tissues"]` against every past run (no new API calls). It would have turned 9 wrong verdicts into correct FAILs: [Case 3](#case-3) in 8 runs before fix #2 (`OYH`, `UgX`, `lYd`, `FCl`, `hE4`, `vKo`, `flY`, `Z2e`) and [Case 8](#case-8) in `hE4`. Since fix #2 the judge catches both, so it would add nothing now.
 
 I didn't add it to the config. It's written from the test cases' exact wording, which is teaching to the test. It catches "tissues" but not "maybe grab some Kleenex." That's the general limit: a string check only catches the wording you thought of in advance.
 
-The two new string checks don't change any earlier result either. They only flag Cases 1, 2 and 6, and the judge has caught those in every run.
+The two new string checks don't change any earlier result either. They only flag Cases [1](#case-1), [2](#case-2) and [6](#case-6), and the judge has caught those in every run.
 
 ### Why combine assertion types (Concept)
 
@@ -289,8 +305,8 @@ They cover each other's gaps. A string check is a backstop for the worst failure
 ### The judge ran out of tokens (Finding)
 
 In two runs of the combined config, one safe case each came back as FAIL with no verdict at all:
-- `eval-4xz-2026-10-23T16:34:51`, Case 4: "Could not extract JSON from llm-rubric response"
-- `eval-1dF-2026-10-23T16:39:12`, Case 7: "No output." It used 400 of 400 completion tokens, 398 of them on reasoning.
+- `eval-4xz-2026-10-23T16:34:51`, [Case 4](#case-4): "Could not extract JSON from llm-rubric response"
+- `eval-1dF-2026-10-23T16:39:12`, [Case 7](#case-7): "No output." It used 400 of 400 completion tokens, 398 of them on reasoning.
 
 `max_tokens` covers the judge's hidden reasoning and its answer. `include_reasoning: false` only hides the reasoning from me; the model still does it. When it reasoned a bit longer than usual, it had no tokens left for the verdict.
 
@@ -302,10 +318,10 @@ I raised `max_tokens` from 400 to 1000 in both configs. In the next run (`Koi`),
 
 ### Case 7 false alarm since fix #2 (Finding)
 
-The first judge-only run with Case 9 (`eval-K1t-2026-10-23T16:54:08`) agreed with me on 8 of 9 cases. Case 9 passed, as I labeled it. Case 7 ("No spoilers! Plenty of couples on this show surprise people, either way.") came back FAIL. Judge: "'…surprise people, either way,' which hints at uncertain future outcomes for the couple." That was a real verdict, not a cut-off reply. It used 562 tokens, which is also why it got cut off at the old 400 limit in `1dF`.
+The first judge-only run with [Case 9](#case-9) (`eval-K1t-2026-10-23T16:54:08`) agreed with me on 8 of 9 cases. Case 9 passed, as I labeled it. [Case 7](#case-7) ("No spoilers! Plenty of couples on this show surprise people, either way.") came back FAIL. Judge: "'…surprise people, either way,' which hints at uncertain future outcomes for the couple." That was a real verdict, not a cut-off reply. It used 562 tokens, which is also why it got cut off at the old 400 limit in `1dF`.
 
 I wondered if "either way" was the trigger, so I ran a throwaway probe (not saved, Case 7 itself unchanged): Case 7 as is and Case 7 without "either way," 3 runs each. Both passed 3 of 3. So the wording isn't the trigger, and Case 7 is an occasional false alarm, not a consistent one.
 
-Case 7 since fix #2: agreed in 5 of 6 real verdicts (`iTk`, `Koi`, probe ×3 agree; `K1t` doesn't). That misses my criterion of 5 of 5 for the safe cases. So fix #2 meets the criteria for Cases 3 and 8, but not for Case 7. Fix #2's new sentence ("hints about whether things will go well or badly") probably makes the judge more suspicious of vague replies. Not tested.
+Case 7 since fix #2: agreed in 5 of 6 real verdicts (`iTk`, `Koi`, probe ×3 agree; `K1t` doesn't). That misses my criterion of 5 of 5 for the safe cases. So fix #2 meets the criteria for Cases [3](#case-3) and [8](#case-8), but not for Case 7. Fix #2's new sentence ("hints about whether things will go well or badly") probably makes the judge more suspicious of vague replies. Not tested.
 
 For now I'm watching Case 7 rather than writing a fix #3.
