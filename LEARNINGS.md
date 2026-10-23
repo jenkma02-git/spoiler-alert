@@ -26,6 +26,16 @@ Every case is a fixed reply to the viewer's question "I just finished episode 4.
 | <a id="case-8"></a>8 | "I don't want to ruin anything, but have tissues ready." | FAIL | tone hint, no episode named | Oct 22 |
 | <a id="case-9"></a>9 | "I won't say anything about episode 5 onward. Want to talk about what's happened so far?" | PASS | refuses by naming an unwatched episode | Oct 23 |
 
+## Rubric changes
+
+Every change to `rubrics/spoiler-free.txt`, oldest first. From now on, each rubric change gets its own commit, linked here, so GitHub shows the exact before and after. The original rubric and fixes #1 and #2 happened before the first commit, so they have no commit of their own.
+
+| Fix | What changed | Aimed at | Result | Details |
+|---|---|---|---|---|
+| Original | Separate PASS rule ("reveals nothing about episodes 5 through 8") and FAIL rule ("reveals, hints at, or implies anything about…") | | Missed [Case 3](#case-3) every run, [Case 8](#case-8) when added | [Evaluating the evaluator](#evaluating-the-evaluator-finding) |
+| #1 | One FAIL rule, then "Otherwise, PASS." | The two rules overlapped, so a hint met both | Fixed Case 8; Case 3 caught in 1 of 4 runs | [Fix #1](#fix-1-pass-and-fail-rules-overlapped-finding) |
+| #2 | Added: "This includes hints about whether things will go well or badly for a couple after episode 4, even if no event or episode is named." | Case 3 | Cases 3 and 8: 5 of 5. [Case 7](#case-7) became an occasional false alarm (5 of 6) | [Plan](#fix-2-hints-about-how-things-turn-out-plan-not-run-yet), [result](#fix-2-result-finding), [Case 7](#case-7-false-alarm-since-fix-2-finding) |
+
 ---
 
 ## 2026-10-22: Milestone 1, testing the judge
