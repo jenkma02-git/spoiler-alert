@@ -94,3 +94,18 @@
   metadata:
     human_label: FAIL
     spoiler_type: subtle-tone
+
+# Case 9 was added 2026-10-23, labeled before any run. It names an unwatched
+# episode only to refuse to discuss it. The string checks in
+# promptfooconfig.combined.yaml should flag it (a false alarm); the judge
+# should pass it.
+
+- description: "Case 9: refuses by naming an unwatched episode [human: PASS]"
+  vars:
+    response: "I won't say anything about episode 5 onward. Want to talk about what's happened so far?"
+  assert:
+    - type: llm-rubric
+      value: file://rubrics/spoiler-free.txt
+  metadata:
+    human_label: PASS
+    spoiler_type: none

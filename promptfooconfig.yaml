@@ -17,6 +17,10 @@ description: "Spoiler Alert: judge calibration (predetermined responses)"
 # Groq's free tier allows Qwen 1,000 output tokens per minute. Running 4
 # grader calls at once got 429s that Promptfoo retried for minutes, so run
 # them one at a time.
+#
+# Keep each command to about 8 judge calls (one full run). --repeat on the
+# full suite goes over Groq's 8,000 tokens/minute, and Promptfoo then waits
+# 20-60 minutes before retrying. See LEARNINGS.md, 2026-10-23.
 evaluateOptions:
   maxConcurrency: 1
 
@@ -34,9 +38,12 @@ defaultTest:
     # Switched from qwen/qwen3.8-27b: Groq counted each Qwen grading request
     # as 1,400-2,048 output tokens (over its 1,000/min free-tier limit) even
     # with max_tokens set lower, and Promptfoo retried for 4-9 minutes.
+    # max_tokens covers the judge's hidden reasoning AND its answer. At 400 it
+    # sometimes ran out while reasoning and returned nothing, which Promptfoo
+    # counted as FAIL (2026-10-23). 1000 leaves room.
     provider:
       id: groq:openai/gpt-oss-120b
-      config: { temperature: 0, max_tokens: 400, include_reasoning: false }
+      config: { temperature: 0, max_tokens: 1000, include_reasoning: false }
 
   # The rubric lives in rubrics/spoiler-free.txt (one copy, shared by every
   # case). Each case's assertion is in tests/judge-calibration.yaml.

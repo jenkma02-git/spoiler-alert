@@ -213,4 +213,99 @@ Acceptance criteria, set before running, over 5 runs:
 
 If it meets these, it's fixed. If not, Case 3 goes into quarantine as a documented known limitation.
 
-**Status:** the rubric change is saved but **not tested yet**.
+**Status:** tested 2026-10-23, see "Fix #2 result" below.
+
+---
+
+## 2026-10-23: Fix #2 results and repeat runs
+
+### Fix #2 result (Finding)
+
+Fix #2 met my acceptance criteria for the two cases it targeted:
+
+| Case | Agreed with me | Criteria | Runs |
+|---|---|---|---|
+| 3 | 5 of 5 | at least 4 of 5 | `iTk` + 4 repeats in `tEc` |
+| 8 | 5 of 5 | at least 4 of 5 | `iTk` + 4 repeats in `tEc` |
+| 1, 2, 4, 5, 6, 7 | 1 of 1 | 5 of 5 | `iTk` only |
+
+I reduced the scope partway through: only Cases 3 and 8 got 5 runs. The other six have been stable in every run so far, so I ran them once to check that fix #2 didn't break them. That run would catch a rubric change that broke a stable case, but not a rare new flip. It's weaker evidence than my original criteria asked for.
+
+The judge gave the same reason for Case 3 all five times: "'don't get too attached' hints that the relationship may not work out." That's the gap fix #2 described, so I think the rubric change made the difference, not a lucky run. After fix #1, Case 3 agreed in only 1 of 4 runs.
+
+Runs: `eval-iTk-2026-10-23T15:12:35` (all 8 cases), `eval-tEc-2026-10-23T15:22:11` (Cases 3 and 8, `--repeat 4`).
+
+### Repeat runs and rate limits (Finding)
+
+Running the full suite with `--repeat 5` (40 judge calls) stalled both times I tried it. Each time, 12 calls finished in seconds, then Groq returned a 429 for going over the free tier's 8,000 tokens per minute (each judge call is about 670 tokens). Promptfoo then waited 58 minutes the first time and 19 minutes the second, even though Groq's error said to retry in milliseconds. I stopped both runs.
+
+Promptfoo picks the wait from Groq's rate-limit headers and seems to use the request-limit reset time instead of the token one. Adding `--delay 6000` didn't help, because the delay applied to the `echo` step, not to the judge calls.
+
+**Rule:** keep each command to about 8 judge calls. A single full run, or `--repeat 4 --filter-pattern "Case (3|8)"` for borderline cases, finishes in about 10 seconds. For 5 full runs, run the normal command 5 times with a minute between runs.
+
+### Combining string checks with the judge (Finding)
+
+I made a second config, `promptfooconfig.combined.yaml`, that runs the same cases with two string checks added to every case through `defaultTest.assert`:
+- `not-icontains-any: ["altar", "finale"]` (mentions the ending)
+- `not-regex: "[Ee]pisode [5-8]"` (names an unwatched episode)
+
+A case passes only if all three checks pass: the two string checks and the case's own `llm-rubric`. `promptfooconfig.yaml` stays judge-only, so its PASS/FAIL is still just the judge's verdict.
+
+I also added Case 9, labeled PASS before running: "I won't say anything about episode 5 onward. Want to talk about what's happened so far?" It names an unwatched episode only to refuse to discuss it. I expected the regex to flag it and the judge to pass it.
+
+Result (`eval-Koi-2026-10-23T16:41:27`):
+
+| Case | String checks | Judge | Overall | Me |
+|---|---|---|---|---|
+| 1, 2, 6 | caught it | FAIL | FAIL | FAIL |
+| 3, 8 | missed it | FAIL | FAIL | FAIL |
+| 4, 5, 7 | pass | PASS | PASS | PASS |
+| 9 | regex flagged it | PASS | FAIL | PASS |
+
+- The string checks caught 3 of the 5 spoilers, for free and the same way every time.
+- They missed both tone-based spoilers (Cases 3 and 8). Only the judge caught those.
+- They raised a false alarm on Case 9, which the judge got right. String checks match words, not meaning.
+
+So string checks work as a cheap first layer for obvious spoilers, but they can't replace the judge, and they need their own false-alarm cases. Without Case 9, this run would have made them look perfect.
+
+One run.
+
+### Replaying a string check against past runs (Finding)
+
+To see a string check catch something the judge missed, I replayed `not-icontains-any: ["too attached", "tissues"]` against every past run (no new API calls). It would have turned 9 wrong verdicts into correct FAILs: Case 3 in 8 runs before fix #2 (`OYH`, `UgX`, `lYd`, `FCl`, `hE4`, `vKo`, `flY`, `Z2e`) and Case 8 in `hE4`. Since fix #2 the judge catches both, so it would add nothing now.
+
+I didn't add it to the config. It's written from the test cases' exact wording, which is teaching to the test. It catches "tissues" but not "maybe grab some Kleenex." That's the general limit: a string check only catches the wording you thought of in advance.
+
+The two new string checks don't change any earlier result either. They only flag Cases 1, 2 and 6, and the judge has caught those in every run.
+
+### Why combine assertion types (Concept)
+
+Here the replies are fixed and the judge is what's being tested. With a real bot generating replies, combined assertions work as layers:
+- **String checks** for hard rules that must never break (never say "altar," stay under a word limit, valid JSON). Free, instant and the same every time, but they only catch wording I thought of, and they raise false alarms.
+- **The judge** for meaning: hints, tone, "is this a spoiler?" It costs time and money, varies between runs, and can break.
+
+They cover each other's gaps. A string check is a backstop for the worst failures on a day the judge gets it wrong, and the judge catches what no word list can. Which layer failed also says something: a string check failing means a hard rule broke, and only the judge failing means a judgment call worth reading. It's like a `cy.request()` status-code check plus someone looking at the page: one is fast and certain but shallow, the other catches what matters but is slower and less consistent.
+
+### The judge ran out of tokens (Finding)
+
+In two runs of the combined config, one safe case each came back as FAIL with no verdict at all:
+- `eval-4xz-2026-10-23T16:34:51`, Case 4: "Could not extract JSON from llm-rubric response"
+- `eval-1dF-2026-10-23T16:39:12`, Case 7: "No output." It used 400 of 400 completion tokens, 398 of them on reasoning.
+
+`max_tokens` covers the judge's hidden reasoning and its answer. `include_reasoning: false` only hides the reasoning from me; the model still does it. When it reasoned a bit longer than usual, it had no tokens left for the verdict.
+
+Promptfoo counted these as FAIL, not as errors (the summary said "0 errors"). That's a false result either way. On a case I labeled FAIL, it would have looked like the judge agreed with me. The only way to spot it was the reason text.
+
+I raised `max_tokens` from 400 to 1000 in both configs. In the next run (`Koi`), every case got a real verdict. Case 4 used 404 tokens, so 400 really was too tight. I checked every `gpt-oss-120b` run since Oct 22: the only cut-off replies were these two, so the earlier results stand.
+
+**Takeaway:** a judge verdict without a real reason isn't a verdict. When I count agreement, I need to check the reasons, not just PASS/FAIL.
+
+### Case 7 false alarm since fix #2 (Finding)
+
+The first judge-only run with Case 9 (`eval-K1t-2026-10-23T16:54:08`) agreed with me on 8 of 9 cases. Case 9 passed, as I labeled it. Case 7 ("No spoilers! Plenty of couples on this show surprise people, either way.") came back FAIL. Judge: "'…surprise people, either way,' which hints at uncertain future outcomes for the couple." That was a real verdict, not a cut-off reply. It used 562 tokens, which is also why it got cut off at the old 400 limit in `1dF`.
+
+I wondered if "either way" was the trigger, so I ran a throwaway probe (not saved, Case 7 itself unchanged): Case 7 as is and Case 7 without "either way," 3 runs each. Both passed 3 of 3. So the wording isn't the trigger, and Case 7 is an occasional false alarm, not a consistent one.
+
+Case 7 since fix #2: agreed in 5 of 6 real verdicts (`iTk`, `Koi`, probe ×3 agree; `K1t` doesn't). That misses my criterion of 5 of 5 for the safe cases. So fix #2 meets the criteria for Cases 3 and 8, but not for Case 7. Fix #2's new sentence ("hints about whether things will go well or badly") probably makes the judge more suspicious of vague replies. Not tested.
+
+For now I'm watching Case 7 rather than writing a fix #3.
