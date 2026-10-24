@@ -1,3 +1,5 @@
+![Spoiler Alert: LLM evaluation and AI quality engineering](docs/images/banner.png)
+
 # Spoiler Alert
 
 An AI evaluation project that asks: do LLM-generated answers about reality TV respect a viewer's spoiler boundary?
