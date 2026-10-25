@@ -31,8 +31,61 @@ predetermined responses to a fictional reality TV scenario?
 - [ ] Reword my background line in the README ("Why this project exists")
 - [x] First commit (pushed to GitHub)
 
+## Next up (agreed)
+
+- [ ] **Switch the judge to OpenRouter** so runs stop getting stuck on Groq's free-tier
+      rate limits. `OPENROUTER_API_KEY` is already in `.env`. Plan: same model
+      (`openrouter:openai/gpt-oss-120b`), check whether OpenRouter can be pinned to one
+      host, then re-baseline (all 9 cases x 5 runs, same rubric) and compare with the
+      Groq results before trusting old numbers. Own commit + a "Judge changes" note
+      in LEARNINGS.md
+- [ ] New banner: the replacement image wasn't found in `docs/images/`, so nothing was
+      pushed. Re-save it there
+
+## Course homework: Day 4 (metrics and model-graded evals)
+
+Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
+
+- [x] **Step 1:** summarize the suite
+- [ ] **Step 2:** metric names, weights and threshold (Katie decides)
+- [ ] **Step 3:** confusion matrix (TP/FP/FN) and F1; break the judge with harder
+      canned cases
+- [ ] **Step 4:** run and explain
+
+### Step 1 findings
+
+- 2 configs, 9 cases. Weights only matter in the combined config (the calibration
+  config has one assertion per case)
+- The suite is already a spoiler / not-spoiler classifier: the judge is the
+  classifier, my labels are the answer key
+
+### Step 2 notes
+
+- Do weights and threshold as an **experiment in a separate homework config**, not
+  in the main configs. A threshold can let a spoiler pass
+- **The angle** (from a ChatGPT discussion): missed spoilers are worse than false
+  alarms. Weights can't express that, because they weight checks, not types of
+  mistakes. It shows up in two places instead:
+  - leading with spoiler recall (maybe F2) instead of plain F1
+  - the threshold: one that lets Case 9's false alarm pass could also let a
+    spoiler through when only the string checks catch it. Show that trade-off
+- Write up what it showed in LEARNINGS.md
+
+### Step 3 notes
+
+- Use the existing judge as the classifier (no separate CSV classifier)
+- Read the course's `compute-fscore.js` before reusing it
+- Keep the F1 script, and add the judge's precision/recall to the README
+
+### Keep these separate in the write-up
+
+- **Weighted score** and **threshold** decide each case's verdict
+- **F1 / precision / recall** grade those verdicts against my labels
+
 ## Possible later steps (not agreed yet)
 
+- Next milestone after the homework: swap `echo` for a real bot. Katie wants a bit
+  more practice with canned responses first, so this isn't started yet
 - Harder judge cases, e.g. Case 2 without "Episode 5," to test whether the
   judge catches the hint itself or just the episode number
 - "Reveals info but isn't a spoiler" case, e.g. a season-wide stat like how many
