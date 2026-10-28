@@ -49,9 +49,12 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
       canned cases
   - [x] `scripts/fscore.js` (scores Judge and Final against human_label; the
         two commands are in the script's header). Current 9 cases: 100% everywhere
-  - [ ] **Next:** Katie writes 2-3 harder cases and labels them BEFORE running. Idea
-        to include: a spoiler `llm-rubric` might miss that one string check catches
-        (shows the weight 2 / threshold 0.75 risk in a real run)
+  - [x] Harder cases 10-13 (Katie wrote 10, 11, 13; Claude wrote 12). Case 11 was
+        the judge's first real miss; Case 13 is its held-out case
+  - [x] Fix #3: wedding day added to the episode 8 line. Full suite x5: 64/65,
+        recall 100%. See LEARNINGS.md, "Fix #3: a fact, not a rule"
+  - [ ] **Next:** commit the rubric change on its own (LEARNINGS rule), then decide:
+        more runs on Cases 3 and 7, or move on to Step 4
 - [ ] **Step 4:** run and explain
 
 ### Step 1 findings
@@ -84,6 +87,12 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
 - When would a low threshold like 0.5 make sense in the real world? Short answer so
   far: for "nice to have" quality checks (tone, length, includes a next step), not for
   rules that must never break, like spoilers
+- How big a spoiler is (minor detail / plot point / ending): should the rubric grade
+  severity instead of PASS/FAIL? Would that change the threshold? Came up writing
+  the "dishes fight in episode 7" case
+- Is a false hint about the ending a spoiler? E.g. "their first dance was sweet"
+  implies they married, but Maya says no at the altar. Tests made-up facts, not
+  just spoilers, so kept out of the Case 11 held-out cases
 
 - LLM eval platforms (LangSmith, Braintrust, Promptfoo's paid version): roughly a
   "Cypress Cloud" for evals, tracking results and metrics across runs. Check what each
