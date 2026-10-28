@@ -80,6 +80,12 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
   far: for "nice to have" quality checks (tone, length, includes a next step), not for
   rules that must never break, like spoilers
 
+- LLM eval platforms (LangSmith, Braintrust, Promptfoo's paid version): roughly a
+  "Cypress Cloud" for evals, tracking results and metrics across runs. Check what each
+  one actually computes (e.g. precision/recall/F1 against an answer key)
+- Promptfoo's `derivedMetrics`: the course says it gives wrong F1 numbers with
+  weighted checks. Maybe try it once to see the problem first-hand
+
 ### Keep these separate in the write-up
 
 - **Weighted score** and **threshold** decide each case's verdict

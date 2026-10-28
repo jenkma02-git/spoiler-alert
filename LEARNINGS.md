@@ -420,3 +420,12 @@ Which one to watch depends on which mistake costs more:
 - **Recall** when misses are expensive: a bug in production, a missed cancer, a spoiler. For this project, recall matters most.
 
 You can't watch just one. Flag everything and recall is 100%; flag almost nothing and precision can be 100%. F1 combines them into one number that's only high when both are.
+
+**What F1 is for.** One number makes it easy to compare versions ("rubric v2 scored 0.91, v1 scored 0.84") and track them over time, and you can't push it up by over-flagging or under-flagging. It's the standard default because in many problems both mistakes cost about the same.
+
+**When F1 isn't the number that matters most.** It depends on the project. The first question is: what's worse here, a false alarm or a miss?
+- Misses worse (spoilers, cancer screening, bugs in production): lead with recall. **F2** is a version of F1 that counts recall more heavily.
+- False alarms worse (spam filter, flaky tests): lead with precision.
+- About equal: F1 is fine.
+
+For Spoiler Alert, misses are worse, so I report precision and recall separately and treat recall as the number that matters most. F1 is just a summary.
