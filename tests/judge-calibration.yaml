@@ -1,18 +1,15 @@
 # Predetermined responses to the same question, each with a human label.
 #
-# metadata.human_label is the answer key: what Katie says the judge SHOULD
-# decide. Promptfoo doesn't read it; we compare it to the judge's verdict.
+# metadata.human_label is the answer key: what Katie says the llm-rubric
+# check SHOULD decide (PASS = spoiler-free, FAIL = spoiler). Promptfoo
+# doesn't read it; we compare it to the Judge metric in the report.
 #
-# Reading the report: PASS/FAIL is the JUDGE's verdict (PASS = spoiler-free,
-# FAIL = spoiler). The judge agrees with the human when the verdict matches
-# the [human: ...] label in the case name.
+# The checks themselves (llm-rubric + string checks) are in
+# promptfooconfig.yaml under defaultTest, so they run on every case here.
 
 - description: "Case 1: obvious spoiler [human: FAIL]"
   vars:
     response: "No. Maya turns Theo down at the altar in the finale."
-  assert:
-    - type: llm-rubric
-      value: file://rubrics/spoiler-free.txt
   metadata:
     human_label: FAIL
     spoiler_type: obvious
@@ -20,9 +17,6 @@
 - description: "Case 2: hints at a future episode [human: FAIL]"
   vars:
     response: "No spoilers! But keep an eye on Theo's past. Episode 5 is a big one for them."
-  assert:
-    - type: llm-rubric
-      value: file://rubrics/spoiler-free.txt
   metadata:
     human_label: FAIL
     spoiler_type: subtle-hint
@@ -30,9 +24,6 @@
 - description: "Case 3: tone gives away the outcome [human: FAIL]"
   vars:
     response: "I won't spoil it. I'll just say don't get too attached."
-  assert:
-    - type: llm-rubric
-      value: file://rubrics/spoiler-free.txt
   metadata:
     human_label: FAIL
     spoiler_type: subtle-tone
@@ -40,9 +31,6 @@
 - description: "Case 4: safe and helpful [human: PASS]"
   vars:
     response: "I won't go past episode 4. So far they got engaged in episode 2 and are adjusting to apartment life. What's your read on them?"
-  assert:
-    - type: llm-rubric
-      value: file://rubrics/spoiler-free.txt
   metadata:
     human_label: PASS
     spoiler_type: none
@@ -50,9 +38,6 @@
 - description: "Case 5: safe but negative about watched episodes [human: PASS]"
   vars:
     response: "Their money fight in episode 3 was rough, and the apartment move clearly added stress. Where it goes from here, you'll have to watch and see!"
-  assert:
-    - type: llm-rubric
-      value: file://rubrics/spoiler-free.txt
   metadata:
     human_label: PASS
     spoiler_type: none
@@ -64,9 +49,6 @@
 - description: "Case 6: different tone hint about the finale [human: FAIL]"
   vars:
     response: "I don't want to ruin anything, but have tissues ready for the finale."
-  assert:
-    - type: llm-rubric
-      value: file://rubrics/spoiler-free.txt
   metadata:
     human_label: FAIL
     spoiler_type: subtle-tone
@@ -74,9 +56,6 @@
 - description: "Case 7: vague but neutral [human: PASS]"
   vars:
     response: "No spoilers! Plenty of couples on this show surprise people, either way."
-  assert:
-    - type: llm-rubric
-      value: file://rubrics/spoiler-free.txt
   metadata:
     human_label: PASS
     spoiler_type: none
@@ -88,9 +67,6 @@
 - description: "Case 8: tone hint, no episode named [human: FAIL]"
   vars:
     response: "I don't want to ruin anything, but have tissues ready."
-  assert:
-    - type: llm-rubric
-      value: file://rubrics/spoiler-free.txt
   metadata:
     human_label: FAIL
     spoiler_type: subtle-tone
@@ -103,9 +79,6 @@
 - description: "Case 9: refuses by naming an unwatched episode [human: PASS]"
   vars:
     response: "I won't say anything about episode 5 onward. Want to talk about what's happened so far?"
-  assert:
-    - type: llm-rubric
-      value: file://rubrics/spoiler-free.txt
   metadata:
     human_label: PASS
     spoiler_type: none

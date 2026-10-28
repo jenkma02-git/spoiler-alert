@@ -352,3 +352,42 @@ All 9 cases × 5 runs (`eval-ZmC-2026-10-28T16:01:41`): every case agreed with m
 That includes [Case 7](#case-7), the occasional false alarm. 5 clean runs don't prove it's fixed, so I'm still watching it.
 
 I'm treating this as a fresh start rather than comparing it line by line with the Groq-direct runs. That comparison can wait until it matters.
+
+### How many repeat runs? (Concept)
+
+The judge doesn't always give the same answer twice, even at temperature 0, so one run can't show whether a verdict is stable. But a clean streak is weaker evidence than it feels like:
+- If a case really flips 10% of the time, it still goes 5 for 5 about 6 times in 10 (0.9⁵ ≈ 0.59).
+- Rough rule ("rule of three"): zero failures in *n* runs means the true failure rate could still be up to about 3/*n*. With 5 runs the exact figure is ~45%; with 20 runs, ~15%; with 50 (the gauntlet size I used for flaky Cypress tests), ~6%.
+
+So today's 5 of 5 rules out big flakiness, not occasional flakiness.
+
+What I'd do on a bigger project (my own approach, not a standard): 3–5 runs while iterating, then 20+ on the cases that matter most or have flipped before, before calling a fix done. Spend runs where the risk is, the same idea as the gauntlet.
+
+### One config instead of three (Decision)
+
+There were three configs: `promptfooconfig.yaml` (`llm-rubric` only), `promptfooconfig.combined.yaml` (plus string checks) and a Day 4 homework config. Keeping track of which one did what was confusing, and this project keeps changing as I learn. So everything is now in `promptfooconfig.yaml`, and the older versions are in git history.
+
+- All three checks are under `defaultTest`, so they run on every case. `tests/judge-calibration.yaml` now holds only the responses and my labels.
+- Each check has a metric name (`Judge`, `EndingWords`, `UnwatchedEpisode`), so the report shows a result for each check.
+- Trade-off: PASS/FAIL in the report is no longer the `llm-rubric` verdict. To compare with my labels, I read the `Judge` metric.
+
+### Weights and thresholds (Finding)
+
+Day 4 homework. The score for a case is (weights of the checks that passed) / (all weights), and a case passes when score >= threshold. I changed one setting at a time, predicted which cases would flip, then ran it. The `llm-rubric` answers were cached, so only my settings changed between runs.
+
+| `llm-rubric` weight | Threshold | Spoilers that got through | False alarms | Run |
+|---|---|---|---|---|
+| 2 | 1.0 | 0 | 1 ([Case 9](#case-9)) | `EGI` |
+| **2** | **0.75** | **0** | **0** | `NiJ` |
+| 2 | 0.5 | 2 ([Cases 3](#case-3), [8](#case-8)) | 0 | `sM0` |
+| 1 | 0.75 | 0 | 1 (Case 9) | `ciH` |
+| 500 | 0.75 | 0 | 0 | `QgJ` |
+
+What it showed:
+- **Raising the threshold can only add FAILs; lowering it can only add PASSes.** Changing a threshold doesn't rerun any check, so the only question is which side of the line each score lands on.
+- **A low threshold lets checks that can't see the problem outvote the one that can.** Cases 3 and 8 are tone hints with no forbidden words, so the string checks pass them by default. At 0.5, those two passes outvote `llm-rubric`, and two spoilers get through.
+- **Equal weights can't tell my two kinds of check apart.** With weight 1, Cases 3 and 8 (only `llm-rubric` failed) and Case 9 (only `not-regex` failed) all score 0.67. No threshold passes Case 9 without also passing the two spoilers. Weight 2 is what separates them.
+- **A huge weight makes the other checks irrelevant.** At weight 500, every verdict is just the `llm-rubric` verdict. The string checks still show up in their metrics but can't change anything.
+- **Weight 2 at 0.75 is the only setting here with no misses and no false alarms**, but only because `llm-rubric` didn't miss anything. If it passed a spoiler that one string check catches (say Case 1), that case would score 0.75 and pass. Missed spoilers are worse than false alarms, and weights can't express that: they weight checks, not kinds of mistakes.
+
+I kept weight 2 and threshold 0.75 in `promptfooconfig.yaml`.

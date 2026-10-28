@@ -1,16 +1,19 @@
-# Milestone 1: does the LLM judge agree with human PASS/FAIL labels?
+# Spoiler Alert: does the LLM judge agree with my PASS/FAIL labels?
 #
 # No real assistant runs here. The responses are written in advance
-# (tests/judge-calibration.yaml), so the only thing being tested is the judge.
-# PASS/FAIL in the report is the judge's verdict (PASS = spoiler-free).
+# (tests/judge-calibration.yaml), so what's being tested is the llm-rubric
+# check and the two string checks below.
 #
 # Run from the repo root:
 #   npx promptfoo@latest eval -c promptfooconfig.yaml --no-cache
 #   npx promptfoo@latest view
 #
-# --no-cache matters: Promptfoo caches grader replies, so without it a second
-# run just replays the first run's verdicts and tells you nothing about
-# whether the judge is consistent.
+# --no-cache matters: Promptfoo caches the judge model's replies, so without
+# it a second run just replays the first run's verdicts.
+#
+# One config on purpose: new concepts get added here as I learn them.
+# Earlier versions (llm-rubric only; string checks without weights) are in
+# git history.
 
 description: "Spoiler Alert: judge calibration (predetermined responses)"
 
@@ -29,14 +32,29 @@ providers:
   - echo
 
 defaultTest:
+  # How a case gets its PASS/FAIL:
+  #   score = (weights of the checks that passed) / (all weights)
+  #   weights are 2 + 1 + 1 = 4, so:
+  #     all 3 pass                          -> 4/4 = 1.00  PASS
+  #     llm-rubric passes, 1 string fails   -> 3/4 = 0.75  PASS
+  #     llm-rubric passes, 2 strings fail   -> 2/4 = 0.50  FAIL
+  #     llm-rubric fails, both strings pass -> 2/4 = 0.50  FAIL
+  # A case passes when score >= threshold. 0.75 lets Case 9's false alarm
+  # pass, but would also pass a spoiler that llm-rubric misses and only one
+  # string check catches (Day 4 homework, 2026-10-28).
+  #
+  # So PASS/FAIL in the report is NOT the llm-rubric verdict anymore. To
+  # compare with my labels, read the Judge metric (or open a case).
+  threshold: 0.75
+
   options:
-    # The judge, with its reasoning kept out of the verdict.
+    # The judge model, with its reasoning kept out of the verdict.
     # Switched from qwen/qwen3.8-27b: Groq counted each Qwen grading request
     # as 1,400-2,048 output tokens (over its 1,000/min free-tier limit) even
     # with max_tokens set lower, and Promptfoo retried for 4-9 minutes.
-    # max_tokens covers the judge's hidden reasoning AND its answer. At 400 it
-    # sometimes ran out while reasoning and returned nothing, which Promptfoo
-    # counted as FAIL (2026-10-23). 1000 leaves room.
+    # max_tokens covers the judge model's hidden reasoning AND its answer. At
+    # 400 it sometimes ran out while reasoning and returned nothing, which
+    # Promptfoo counted as FAIL (2026-10-23). 1000 leaves room.
     # Called through OpenRouter since 2026-10-28 (paid, no free-tier rate
     # limits). provider.only pins it to Groq, the host earlier runs used;
     # otherwise OpenRouter picks among ~25 hosts, some with compressed
@@ -50,8 +68,26 @@ defaultTest:
         provider: { only: ["groq"], allow_fallbacks: false }
         passthrough: { reasoning: { exclude: true } }
 
-  # The rubric lives in rubrics/spoiler-free.txt (one copy, shared by every
-  # case). Each case's assertion is in tests/judge-calibration.yaml.
+  # These run on every case in tests/judge-calibration.yaml.
+  # metric: a name the report totals by, so each check gets its own pass rate.
+  assert:
+    # The judge model reads the response against the rubric.
+    # Weight 2: it's the only check that understands meaning.
+    - type: llm-rubric
+      value: file://rubrics/spoiler-free.txt
+      weight: 2
+      metric: Judge
+
+    # String checks: no AI involved, same reply -> same result every time.
+    # Mentions the ending.
+    - type: not-icontains-any
+      value: ["altar", "finale"]
+      metric: EndingWords
+    # Names an unwatched episode. Promptfoo's regex has no case-insensitive
+    # flag, so [Ee] covers "Episode" and "episode".
+    - type: not-regex
+      value: "[Ee]pisode [5-8]"
+      metric: UnwatchedEpisode
 
 tests:
   - file://tests/judge-calibration.yaml

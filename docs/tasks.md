@@ -43,7 +43,8 @@ predetermined responses to a fictional reality TV scenario?
 Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
 
 - [x] **Step 1:** summarize the suite
-- [ ] **Step 2:** metric names, weights and threshold (Katie decides)
+- [x] **Step 2:** metric names, weights and threshold. Weight 2, threshold 0.75; tried
+      4 other settings (see LEARNINGS.md, "Weights and thresholds")
 - [ ] **Step 3:** confusion matrix (TP/FP/FN) and F1; break the judge with harder
       canned cases
 - [ ] **Step 4:** run and explain
@@ -57,8 +58,8 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
 
 ### Step 2 notes
 
-- Do weights and threshold as an **experiment in a separate homework config**, not
-  in the main configs. A threshold can let a spoiler pass
+- ~~Separate homework config~~: changed to one config (`promptfooconfig.yaml`) for
+  everything. See LEARNINGS.md, "One config instead of three"
 - **The angle** (from a ChatGPT discussion): missed spoilers are worse than false
   alarms. Weights can't express that, because they weight checks, not types of
   mistakes. It shows up in two places instead:
@@ -73,6 +74,12 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
 - Read the course's `compute-fscore.js` before reusing it
 - Keep the F1 script, and add the judge's precision/recall to the README
 
+### Questions for later
+
+- When would a low threshold like 0.5 make sense in the real world? Short answer so
+  far: for "nice to have" quality checks (tone, length, includes a next step), not for
+  rules that must never break, like spoilers
+
 ### Keep these separate in the write-up
 
 - **Weighted score** and **threshold** decide each case's verdict
@@ -80,6 +87,9 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
 
 ## Possible later steps (not agreed yet)
 
+- Add a "where this shows up at work" line to each Concept in LEARNINGS.md (Katie
+  likes the idea; do it after the homework). Practice for applying the concepts, and
+  interview material
 - Next milestone after the homework: swap `echo` for a real bot. Katie wants a bit
   more practice with canned responses first, so this isn't started yet
 - After the real bot: real shows (Love Is Blind, MAFS, 90 Day Fiance). Likely RAG:
@@ -96,7 +106,9 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
 - Spoiler severity: PASS/FAIL says whether it's a spoiler, not how bad. Case 2 (says
   something happens in ep 5) feels milder than Case 3 (hints at the ending), but both
   stay FAIL. Only add a severity metadata field once something uses it (e.g. catch
-  rate by severity)
+  rate by severity). Another route: ask the llm-rubric check for a 0-1 score
+  instead of PASS/FAIL (then it needs its own threshold). Scores from a judge model
+  tend to be less consistent than PASS/FAIL, so test that first
 - Swap `echo` for a real bot (system prompt + model) and reuse the calibrated judge
 - Coursework requirements (still to find out)
 - Project `CLAUDE.md`, including the rule that a metadata field must be used
