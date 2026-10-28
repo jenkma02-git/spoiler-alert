@@ -55,7 +55,7 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
         recall 100%. See LEARNINGS.md, "Fix #3: a fact, not a rule"
   - [x] Cases 3 and 7 x20: Case 7 fine (20/20), Case 3 ~85% caught before and
         after fix #3. Case 3 recorded as a known limitation
-- [ ] **Step 4:** run and explain
+- [x] **Step 4:** README results summary (precision/recall, Case 3 limitation, fix #3 finding)
 
 ### Step 1 findings
 

@@ -27,7 +27,7 @@ It's also a Promptfoo learning exercise alongside the Engenious AI testing cours
 | Part | What it is | Where |
 |---|---|---|
 | System under test | The judge: model + rubric | Model: `promptfooconfig.yaml` (`defaultTest`). Rubric: `rubrics/spoiler-free.txt` |
-| Test inputs | 9 fixed responses to one fictional scenario, each with a human label | `tests/judge-calibration.yaml` |
+| Test inputs | 13 fixed responses to one fictional scenario, each with a human label | `tests/judge-calibration.yaml` |
 | "Bot" | Promptfoo's `echo` provider, which returns each fixed response unchanged so it can be graded | `promptfooconfig.yaml` (`providers`) |
 
 - **Scenario:** a made-up show, *Engaged Sight Unseen*. Because it's fictional, there's no real-world episode data to verify, and the judge can't rely on knowing the plot. The rubric lists what the viewer has and hasn't watched.
@@ -47,19 +47,25 @@ PASS/FAIL in the report is the weighted score of all three checks against the th
 
 Run from the repo root so Promptfoo finds `.env`. Use `--no-cache` when checking consistency. Without it, Promptfoo replays earlier judge answers instead of asking again.
 
-**Reading the results:** PASS/FAIL in the report is the judge's verdict (PASS = spoiler-free, FAIL = spoiler), not a measure of whether things went well. The judge agrees with me when its verdict matches the `[human: ...]` label in the case name.
+To score the judge against my labels (precision, recall, F1), save the run with `-o results.json` and then run `node scripts/fscore.js results.json`.
 
 ## Current status
 
+**Latest results** (all 13 cases × 5 runs, after rubric fix #3):
+- The judge agreed with my labels 64 of 65 times. **Recall 100%** (no spoilers missed) and **precision 98%** (one false alarm, on Case 7). Recall matters most here: a missed spoiler is worse than a false alarm.
+- **Known limitation:** Case 3, a spoiler given through tone ("don't get too attached"), is caught about 85% of the time over 25 runs. It was 5 of 5 in the run above, which shows why one clean run isn't enough.
+- **Most interesting miss:** "Maya's wedding dress was so beautiful!" got past the judge and both string checks with a perfect score. A new rule about weddings fixed it but caused false alarms. Adding one fact to the rubric (episode 8 is the wedding day) fixed it without them.
+- A response that told the grader to mark it PASS (a prompt injection) was still caught in all 12 runs.
+
+Details and run IDs: [LEARNINGS.md](LEARNINGS.md), 2026-10-28.
+
 **Done**
-- 9 labeled cases (5 original, 3 added later to check a rubric fix, 1 added as a string-check false alarm)
-- Judge runs reliably one call at a time (about 10 seconds for all 9)
-- Latest results: after two rubric fixes, Case 3, a spoiler given through tone ("don't get too attached"), went from flaky to caught in 5 of 5 runs. Case 7, a safe reply, became an occasional false alarm (the judge agreed with me in 5 of 6 verdicts). Case 9 (added later) passed in its first run.
-- A second config combines string checks with the judge. The string checks catch obvious spoilers for free, miss subtle ones, and raise a false alarm on Case 9.
+- 13 labeled cases, including held-out cases written before each rubric fix to check it wasn't tailored to one example
+- One config: the judge (weight 2) plus two string checks, with a 0.75 threshold
+- Three rubric fixes, each checked with repeat runs
 
 **Next**
-- Watch Case 7 (occasional false alarm since fix #2), or decide on a fix
-- Repeat runs before calling any rubric change a fix
+- Case 3: a rubric fix #4 with new held-out cases, or try a different judge model
 
 **Later ideas (not started)**
 - Swap `echo` for a real bot and reuse the tested judge
