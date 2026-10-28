@@ -14,13 +14,9 @@
 
 description: "Spoiler Alert: judge calibration (predetermined responses)"
 
-# Groq's free tier allows Qwen 1,000 output tokens per minute. Running 4
-# grader calls at once got 429s that Promptfoo retried for minutes, so run
-# them one at a time.
-#
-# Keep each command to about 8 judge calls (one full run). --repeat on the
-# full suite goes over Groq's 8,000 tokens/minute, and Promptfoo then waits
-# 20-60 minutes before retrying. See LEARNINGS.md, 2026-10-23.
+# One judge call at a time. This dates from Groq's free tier (see
+# LEARNINGS.md, 2026-10-23); through OpenRouter, --repeat 5 on the full
+# suite takes under a minute.
 evaluateOptions:
   maxConcurrency: 1
 
@@ -41,9 +37,18 @@ defaultTest:
     # max_tokens covers the judge's hidden reasoning AND its answer. At 400 it
     # sometimes ran out while reasoning and returned nothing, which Promptfoo
     # counted as FAIL (2026-10-23). 1000 leaves room.
+    # Called through OpenRouter since 2026-10-28 (paid, no free-tier rate
+    # limits). provider.only pins it to Groq, the host earlier runs used;
+    # otherwise OpenRouter picks among ~25 hosts, some with compressed
+    # versions of the model. reasoning.exclude replaces Groq's
+    # include_reasoning: false.
     provider:
-      id: groq:openai/gpt-oss-120b
-      config: { temperature: 0, max_tokens: 1000, include_reasoning: false }
+      id: openrouter:openai/gpt-oss-120b
+      config:
+        temperature: 0
+        max_tokens: 1000
+        provider: { only: ["groq"], allow_fallbacks: false }
+        passthrough: { reasoning: { exclude: true } }
 
   # The rubric lives in rubrics/spoiler-free.txt (one copy, shared by every
   # case). Each case's assertion is in tests/judge-calibration.yaml.

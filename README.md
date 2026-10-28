@@ -31,14 +31,14 @@ It's also a Promptfoo learning exercise alongside the Engenious AI testing cours
 | "Bot" | Promptfoo's `echo` provider, which returns each fixed response unchanged so it can be graded | `promptfooconfig.yaml` (`providers`) |
 
 - **Scenario:** a made-up show, *Engaged Sight Unseen*. Because it's fictional, there's no real-world episode data to verify, and the judge can't rely on knowing the plot. The rubric lists what the viewer has and hasn't watched.
-- **Judge:** `groq:openai/gpt-oss-120b`, temperature 0, on Groq's free tier. It started as `qwen/qwen3.8-27b` and was switched because of rate limits. See LEARNINGS.md.
+- **Judge:** `openai/gpt-oss-120b`, temperature 0, called through OpenRouter and pinned to the Groq host. It started as `qwen/qwen3.8-27b` on Groq's free tier; both changes were because of rate limits. See LEARNINGS.md.
 
 ## Getting started
 
-You need Node.js (tested with 24.21; current Promptfoo requires 22.22 or later) and a free [Groq API key](https://console.groq.com/keys).
+You need Node.js (tested with 24.21; current Promptfoo requires 22.22 or later) and an [OpenRouter API key](https://openrouter.ai/keys) (paid; a full run costs a fraction of a cent).
 
 ```bash
-cp .env.example .env        # then paste your GROQ_API_KEY into .env
+cp .env.example .env        # then paste your OPENROUTER_API_KEY into .env
 npx promptfoo@latest eval -c promptfooconfig.yaml --no-cache
 npx promptfoo@latest view   # opens the results in a browser
 ```

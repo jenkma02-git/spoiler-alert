@@ -335,3 +335,20 @@ I wondered if "either way" was the trigger, so I ran a throwaway probe (not save
 Case 7 since fix #2: agreed in 5 of 6 real verdicts (`iTk`, `Koi`, probe ×3 agree; `K1t` doesn't). That misses my criterion of 5 of 5 for the safe cases. So fix #2 meets the criteria for Cases [3](#case-3) and [8](#case-8), but not for Case 7. Fix #2's new sentence ("hints about whether things will go well or badly") probably makes the judge more suspicious of vague replies. Not tested.
 
 For now I'm watching Case 7 rather than writing a fix #3.
+
+## 2026-10-28: Judge moved to OpenRouter
+
+### Judge changes (Decision)
+
+Groq's free-tier rate limits kept stalling repeat runs, so the judge now runs through OpenRouter (paid, roughly a fraction of a cent per run). Same model, `openai/gpt-oss-120b`.
+
+- **Pinned to one host.** OpenRouter serves this model from ~25 hosts, some running compressed versions of it. Letting it pick would add a hidden variable to every run, so both configs pin it to Groq (`provider: { only: ["groq"], allow_fallbacks: false }`). A direct test call confirmed the request went to Groq.
+- **Reasoning still hidden.** `include_reasoning: false` is Groq-only, so it's now OpenRouter's `reasoning: { exclude: true }`.
+
+### Fresh baseline (Finding)
+
+All 9 cases × 5 runs (`eval-ZmC-2026-10-28T16:01:41`): every case agreed with my label 5 of 5, 45 of 45 total. 48 seconds, no rate-limit waits. I checked the reasons too: every verdict was a real one, none cut off.
+
+That includes [Case 7](#case-7), the occasional false alarm. 5 clean runs don't prove it's fixed, so I'm still watching it.
+
+I'm treating this as a fresh start rather than comparing it line by line with the Groq-direct runs. That comparison can wait until it matters.

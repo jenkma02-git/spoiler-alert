@@ -33,12 +33,8 @@ predetermined responses to a fictional reality TV scenario?
 
 ## Next up (agreed)
 
-- [ ] **Switch the judge to OpenRouter** so runs stop getting stuck on Groq's free-tier
-      rate limits. `OPENROUTER_API_KEY` is already in `.env`. Plan: same model
-      (`openrouter:openai/gpt-oss-120b`), check whether OpenRouter can be pinned to one
-      host, then re-baseline (all 9 cases x 5 runs, same rubric) and compare with the
-      Groq results before trusting old numbers. Own commit + a "Judge changes" note
-      in LEARNINGS.md
+- [x] **Switch the judge to OpenRouter**, pinned to Groq. Fresh baseline: 45/45 agree
+      (see LEARNINGS.md, 2026-10-28). Comparing with the old Groq-direct runs can wait
 - [ ] New banner: the replacement image wasn't found in `docs/images/`, so nothing was
       pushed. Re-save it there
 
@@ -86,6 +82,11 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
 
 - Next milestone after the homework: swap `echo` for a real bot. Katie wants a bit
   more practice with canned responses first, so this isn't started yet
+- After the real bot: real shows (Love Is Blind, MAFS, 90 Day Fiance). Likely RAG:
+  the bot looks up episode summaries to answer. Keep the answer key separate from
+  what the bot looks up: a small human-verified fact list (a model can draft it, I
+  check it) plus my labels. Same pattern as testing job matching against
+  recruiter-labeled profiles. Watch for the judge already "knowing" real endings
 - Harder judge cases, e.g. Case 2 without "Episode 5," to test whether the
   judge catches the hint itself or just the episode number
 - "Reveals info but isn't a spoiler" case, e.g. a season-wide stat like how many

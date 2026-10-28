@@ -9,8 +9,8 @@
 # comparable. Run this one from the repo root:
 #   npx promptfoo@latest eval -c promptfooconfig.combined.yaml --no-cache
 #
-# 9 judge calls per run. Don't use --repeat on the full suite (Groq rate
-# limit, see LEARNINGS.md 2026-10-23).
+# 9 judge calls per run. --repeat is fine now that the judge runs through
+# OpenRouter (see LEARNINGS.md, 2026-10-28).
 
 description: "Spoiler Alert: string checks + judge (predetermined responses)"
 
@@ -25,10 +25,14 @@ providers:
 
 defaultTest:
   options:
-    # Same judge as the calibration config.
+    # Same judge as the calibration config (see the notes there).
     provider:
-      id: groq:openai/gpt-oss-120b
-      config: { temperature: 0, max_tokens: 1000, include_reasoning: false }
+      id: openrouter:openai/gpt-oss-120b
+      config:
+        temperature: 0
+        max_tokens: 1000
+        provider: { only: ["groq"], allow_fallbacks: false }
+        passthrough: { reasoning: { exclude: true } }
 
   # String checks, added to every case on top of the case's own llm-rubric.
   # No AI involved: same reply, same result every time.
