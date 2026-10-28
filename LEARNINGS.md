@@ -391,3 +391,32 @@ What it showed:
 - **Weight 2 at 0.75 is the only setting here with no misses and no false alarms**, but only because `llm-rubric` didn't miss anything. If it passed a spoiler that one string check catches (say Case 1), that case would score 0.75 and pass. Missed spoilers are worse than false alarms, and weights can't express that: they weight checks, not kinds of mistakes.
 
 I kept weight 2 and threshold 0.75 in `promptfooconfig.yaml`.
+
+### Precision and recall (Concept)
+
+Precision and recall confused me in class, so this is how I'm relating them to things I already know. "Flagged" here means the run called it a spoiler (FAIL).
+
+- **Precision:** of everything flagged, how many were real? False alarms bring it down.
+- **Recall:** of everything real, how many got flagged? Misses bring it down.
+- **Accuracy** isn't either one. It's how many of *all* cases matched my label, which mixes both kinds of mistake into one number.
+
+Example from the threshold 1.0 run (`EGI`): 6 cases flagged, 5 of them real spoilers ([Case 9](#case-9) was the false alarm). All 5 real spoilers flagged.
+- Precision = 5/6 = 83%
+- Recall = 5/5 = 100%
+- Accuracy = 8/9 = 89%
+
+At threshold 0.5 (`sM0`), recall dropped to 3/5 = 60%: [Cases 3](#case-3) and [8](#case-8) got through.
+
+| Example | Precision: of the flagged ones, how many real? | Recall: of the real ones, how many caught? |
+|---|---|---|
+| **My regression suite** | Test failures that were real bugs (not flaky) | Real bugs that failed a test |
+| **Job matching** | Candidates shown who were actually qualified | Qualified candidates the search showed |
+| **Spam filter** | Emails in the spam folder that really were spam | Spam that landed in the spam folder |
+| **Cancer screening** | Flagged people who really have cancer | People with cancer the test flagged |
+| **Spoiler Alert** | Flagged replies that really were spoilers | Spoilers that got flagged |
+
+Which one to watch depends on which mistake costs more:
+- **Precision** when false alarms are expensive. Flaky tests were a precision problem: too many false failures and the team stops trusting the suite. That's what the 50-pass gauntlet was for.
+- **Recall** when misses are expensive: a bug in production, a missed cancer, a spoiler. For this project, recall matters most.
+
+You can't watch just one. Flag everything and recall is 100%; flag almost nothing and precision can be 100%. F1 combines them into one number that's only high when both are.
