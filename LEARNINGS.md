@@ -501,3 +501,17 @@ Two takeaways:
 ### Temperature 0 isn't deterministic (Finding)
 
 [Case 13](#case-13) got different verdicts in 5 runs at `temperature: 0` with the same rubric (`zmP`: 3 PASS, 2 FAIL). People often assume temperature 0 means the same answer every time. Here it didn't, which is why every result above comes from repeat runs.
+
+### Cases 3 and 7 over 20 runs (Finding + Decision)
+
+To settle the two shaky cases after fix #3, I ran each 20 times (`eval-RI2-2026-10-28T20:21:44`):
+
+| Case | Fix #3 (this run) | Fix #3, all runs | Old rubric, OpenRouter |
+|---|---|---|---|
+| [3](#case-3) | 17/20 | 22/25 (88%) | 16/20 (80%) |
+| [7](#case-7) | 20/20 | 24/25 (96%) | 15/15 |
+
+- **Case 7 is fine.** The false alarms came from version 3b, not the version I kept. 0 misses in 20 still allows a rare one (up to ~15% by the rule of three).
+- **Case 3 misses about 1 time in 8, before and after fix #3.** All 3 misses gave the same reason as always: "only gives a generic non-spoiler warning." That's a steady weak spot, not new flakiness.
+
+**Decision:** I'm treating Case 3 as a known limitation, like quarantining a flaky test with a ticket instead of blocking the suite. Fixing it would be its own rubric change with its own held-out cases, or a test of a different judge model ([Qwen caught it once](#a-different-judge-may-read-the-rubric-differently-hypothesis)).

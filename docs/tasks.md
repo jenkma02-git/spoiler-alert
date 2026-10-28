@@ -45,7 +45,7 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
 - [x] **Step 1:** summarize the suite
 - [x] **Step 2:** metric names, weights and threshold. Weight 2, threshold 0.75; tried
       4 other settings (see LEARNINGS.md, "Weights and thresholds")
-- [ ] **Step 3:** confusion matrix (TP/FP/FN) and F1; break the judge with harder
+- [x] **Step 3:** confusion matrix (TP/FP/FN) and F1; break the judge with harder
       canned cases
   - [x] `scripts/fscore.js` (scores Judge and Final against human_label; the
         two commands are in the script's header). Current 9 cases: 100% everywhere
@@ -53,8 +53,8 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
         the judge's first real miss; Case 13 is its held-out case
   - [x] Fix #3: wedding day added to the episode 8 line. Full suite x5: 64/65,
         recall 100%. See LEARNINGS.md, "Fix #3: a fact, not a rule"
-  - [ ] **Next:** commit the rubric change on its own (LEARNINGS rule), then decide:
-        more runs on Cases 3 and 7, or move on to Step 4
+  - [x] Cases 3 and 7 x20: Case 7 fine (20/20), Case 3 ~85% caught before and
+        after fix #3. Case 3 recorded as a known limitation
 - [ ] **Step 4:** run and explain
 
 ### Step 1 findings
