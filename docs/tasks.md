@@ -47,6 +47,11 @@ Lessons: `~/Documents/Break-Into-AI-Testing/modules/02-advanced-eval/`
       4 other settings (see LEARNINGS.md, "Weights and thresholds")
 - [ ] **Step 3:** confusion matrix (TP/FP/FN) and F1; break the judge with harder
       canned cases
+  - [x] `scripts/fscore.js` (scores Judge and Final against human_label; the
+        two commands are in the script's header). Current 9 cases: 100% everywhere
+  - [ ] **Next:** Katie writes 2-3 harder cases and labels them BEFORE running. Idea
+        to include: a spoiler `llm-rubric` might miss that one string check catches
+        (shows the weight 2 / threshold 0.75 risk in a real run)
 - [ ] **Step 4:** run and explain
 
 ### Step 1 findings
